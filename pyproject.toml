@@ -1,0 +1,24 @@
+[project]
+name = "cnum-interpolation-and-linear-systems"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "leirdan", email = "uouleirdan@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "numpy>=1.26.0",
+    "matplotlib>=3.8.0",
+    "beautifulsoup4>=4.15.0",
+    "pandas>=3.1.1",
+    "scipy>=1.18.1",
+    "requests>=2.34.2",
+]
+
+[project.scripts]
+main = "cnum_interpolation_and_linear_systems.main:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"
