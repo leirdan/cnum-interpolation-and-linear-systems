@@ -1,6 +1,8 @@
 from pathlib import Path
 
 from .ls.gauss_elim import gauss_elim
+from .ls.lu import lu
+from .ls.gauss_jacobi import gauss_jacobi
 from .pipeline import Metodo, rodar_pipeline
 
 # ── Configurações Questão 1 ──────────────────────────────────────────────────────────────
@@ -19,6 +21,8 @@ SEED = 67
 # Todo método deve ter a assinatura (a: np.ndarray, b: np.ndarray) -> np.ndarray.
 METODOS: dict[str, Metodo] = {
     "eliminacao_gauss": gauss_elim,
+    "eliminacao_lu": lu,
+    "jacobi": gauss_jacobi,
 }
 
 
