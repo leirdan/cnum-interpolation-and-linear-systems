@@ -31,3 +31,15 @@ def back_substitution(a: np.ndarray, b : np.ndarray = None) -> np.ndarray:
         x[i] = (aum[i, -1] - np.dot(aum[i, i + 1:k], x[i + 1:k])) / aum[i, i]
 
     return x
+
+def abs_dist(a: np.ndarray, b: np.ndarray) -> float:
+    """
+    Retorna a distância máxima absoluta entre dois vetores.
+    """
+    return np.linalg.norm(b - a, ord=np.inf)
+
+def rel_dist(a: np.ndarray, b: np.ndarray) -> float:
+    """
+    Retorna a distância máxima relativa entre dois vetores.
+    """
+    return abs_dist(a, b) / np.linalg.norm(b, ord=np.inf)

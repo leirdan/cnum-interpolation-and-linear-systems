@@ -52,6 +52,31 @@ def residuo_maximo(a: np.ndarray, b: np.ndarray, xs: np.ndarray) -> float:
     return float(np.max(np.abs(b - a @ xs)))
 
 
+def testar_dominancia_diagonal(
+    a: np.ndarray | scipy.sparse.spmatrix | scipy.sparse.sparray,
+) -> dict[str, bool]:
+    """Testa dominância diagonal fraca e estrita por linhas e colunas."""
+    if a.ndim != 2 or a.shape[0] != a.shape[1]:
+        raise ValueError("A matriz A deve ser quadrada.")
+
+    diagonal = np.abs(a.diagonal())
+    if scipy.sparse.issparse(a):
+        abs_a = abs(a)
+        soma_linhas_fora_diagonal = np.asarray(abs_a.sum(axis=1)).ravel() - diagonal
+        soma_colunas_fora_diagonal = np.asarray(abs_a.sum(axis=0)).ravel() - diagonal
+    else:
+        abs_a = np.abs(a)
+        soma_linhas_fora_diagonal = abs_a.sum(axis=1) - diagonal
+        soma_colunas_fora_diagonal = abs_a.sum(axis=0) - diagonal
+
+    return {
+        "linhas": bool(np.all(diagonal >= soma_linhas_fora_diagonal)),
+        "linhas_estrita": bool(np.all(diagonal > soma_linhas_fora_diagonal)),
+        "colunas": bool(np.all(diagonal >= soma_colunas_fora_diagonal)),
+        "colunas_estrita": bool(np.all(diagonal > soma_colunas_fora_diagonal)),
+    }
+
+
 def rodar_pipeline(
     pasta_a: Path,
     pasta_b: Path,
@@ -83,6 +108,13 @@ def rodar_pipeline(
         if a.shape[0] != a.shape[1]:
             print(f"[{nome}] ignorada: A {a.shape} não é quadrada.")
             continue
+
+        dominancia = testar_dominancia_diagonal(a)
+        print(
+            f"[{nome}] dominância diagonal: "
+            f"linhas={'estrita' if dominancia['linhas_estrita'] else 'fraca' if dominancia['linhas'] else 'não'}, "
+            f"colunas={'estrita' if dominancia['colunas_estrita'] else 'fraca' if dominancia['colunas'] else 'não'}"
+        )
 
         salvar_b(b, pasta_b, nome, sufixo_b)
 
