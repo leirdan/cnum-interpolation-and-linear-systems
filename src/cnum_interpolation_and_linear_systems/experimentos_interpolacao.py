@@ -1,7 +1,7 @@
 """
 Experimentos da Questão 2 — Interpolação polinomial (itens 2.2 e 2.3).
 
-  2.2  f(x) = e^x em [1, 3], n = 3, 4, 5, 10 (por enquanto só pelo sistema linear).
+  2.2  f(x) = e^x em [1, 3], n = 3, 4, 5, 10, pelo sistema linear e por Lagrange.
   2.3  f(x) = 1/(1 + 25x^2) em [0, 4], n = 4, 10, 15, pelo sistema linear.
   (n é o grau do polinômio interpolador, logo são usados n+1 pontos.)
 
@@ -9,7 +9,7 @@ As configurações (intervalos, graus, pontos de teste, malha, pasta de saída) 
 main.py e são passadas como parâmetros para as funções deste arquivo.
 
 A comparação com a função original é feita em tabelas, impressas no terminal e
-salvas em Markdown em resultados_questao2/tabelas_questao2.md.
+salvas em Markdown em resultados_questao2/ (tabelas_questao2_2.md e tabelas_questao2_3.md).
 
 Como rodar (na raiz do projeto):
     uv run main                                                                   (questões 1 e 2)
@@ -19,11 +19,11 @@ import math
 
 import numpy as np
 
+from .ls.interpolacao_lagrange import lagrange
 from .ls.interpolacao_sist_linear import avaliar_polinomio, interpolacao_sist_linear, matriz_vandermonde
 
-# TODO: reativar quando os módulos de Lagrange e diferenças divididas existirem
+# TODO: reativar quando o módulo de diferenças divididas existir
 # from .interpolacao_diferencas_divididas import coeficientes_newton, newton
-# from .interpolacao_lagrange import lagrange
 
 
 def f_exp(x):
@@ -85,7 +85,8 @@ def tabela(titulo, cabecalho, linhas):
 
 def questao_2_2(a, b, graus, pontos_teste, n_malha) -> list[str]:
     """
-    Item 2.2: interpola e^x em [a, b] pelo sistema linear e compara com a função original.
+    Item 2.2: interpola e^x em [a, b] pelo sistema linear (SL) e por Lagrange (LG)
+    e compara os dois com a função original.
 
     Entrada:
         a, b         -> intervalo [a, b];
@@ -93,8 +94,8 @@ def questao_2_2(a, b, graus, pontos_teste, n_malha) -> list[str]:
         pontos_teste -> pontos x (que não são nós) onde P_n(x) é comparado com e^x;
         n_malha      -> nº de pontos da malha fina usada para medir o erro máximo.
     Tabelas geradas:
-      - uma por grau n: P_n(x) e o erro |e^x - P_n(x)| nos pontos de teste;
-      - resumo: erro máximo na malha fina, erro relativo máximo e a cota teórica
+      - uma por grau n: P_n(x) e o erro |e^x - P_n(x)| nos pontos de teste, para cada método;
+      - resumo: erro máximo na malha fina e erro relativo máximo de cada método, e a cota teórica
         do erro de truncamento  e^b/(n+1)! * max|(x-x0)...(x-xn)|.
     Saída: lista com as tabelas em Markdown.
     """
@@ -103,7 +104,8 @@ def questao_2_2(a, b, graus, pontos_teste, n_malha) -> list[str]:
     tabelas_md = []
     resumo = []
 
-    print(f"============ Questão 2.2: f(x) = e^x em [{_num(a)}, {_num(b)}] (sistema linear) ============")
+    print(f"============ Questão 2.2: f(x) = e^x em [{_num(a)}, {_num(b)}] "
+          "(sistema linear e Lagrange) ============")
 
     for n in graus:
         xs, ys = pontos_igualmente_espacados(f_exp, a, b, n)
@@ -114,25 +116,30 @@ def questao_2_2(a, b, graus, pontos_teste, n_malha) -> list[str]:
         for x in pontos_teste:
             fx = math.exp(x)
             p_sl = avaliar_polinomio(coefs, x)
-            linhas.append([f"{x:.1f}", f"{fx:.8f}", f"{p_sl:.8f}", f"{abs(fx - p_sl):.2e}"])
+            p_lg = lagrange(xs, ys, x)
+            linhas.append([f"{x:.1f}", f"{fx:.8f}",
+                           f"{p_sl:.8f}", f"{abs(fx - p_sl):.2e}",
+                           f"{p_lg:.8f}", f"{abs(fx - p_lg):.2e}"])
         tabelas_md.append(tabela(
             f"2.2 (n = {n}): e^x x P_{n}(x)",
-            ["x", "e^x", "P SL", "erro SL"],
+            ["x", "e^x", "P SL", "erro SL", "P LG", "erro LG"],
             linhas))
 
         # resumo do grau n (erro medido na malha fina)
         p_sl = avaliar_polinomio(coefs, malha)
         erro_sl = np.abs(p_sl - f_malha)
+        p_lg = lagrange(xs, ys, malha)
+        erro_lg = np.abs(p_lg - f_malha)
         # toda derivada de e^x é e^x, cujo máximo em [a, b] é e^b
         cota = math.exp(b) / math.factorial(n + 1) * np.max(np.abs(produto_nodal(xs, malha)))
         resumo.append([str(n), f"{(b - a) / n:.4f}",
-                       f"{erro_sl.max():.3e}",
-                       f"{np.max(erro_sl / f_malha):.3e}",
+                       f"{erro_sl.max():.3e}", f"{erro_lg.max():.3e}",
+                       f"{np.max(erro_sl / f_malha):.3e}", f"{np.max(erro_lg / f_malha):.3e}",
                        f"{cota:.3e}"])
 
     tabelas_md.append(tabela(
         f"2.2 Resumo: erro máximo em [{_num(a)}, {_num(b)}]",
-        ["n", "h", "erro máx SL", "erro relativo máx", "cota teórica"],
+        ["n", "h", "erro máx SL", "erro máx LG", "erro rel máx SL", "erro rel máx LG", "cota teórica"],
         resumo))
     return tabelas_md
 
@@ -209,7 +216,7 @@ def questao_2_3(a, b, graus, pontos_teste, n_malha) -> list[str]:
     return tabelas_md
 
 
-def salvar_tabelas(pasta, tabelas_md, nome_arquivo="tabelas_questao2.md"):
+def salvar_tabelas(pasta, tabelas_md, nome_arquivo):
     """
     Salva tabelas em Markdown em pasta/nome_arquivo (para colar no relatório).
 
@@ -220,7 +227,7 @@ def salvar_tabelas(pasta, tabelas_md, nome_arquivo="tabelas_questao2.md"):
     pasta.mkdir(parents=True, exist_ok=True)
     arquivo = pasta / nome_arquivo
     arquivo.write_text("\n\n".join(tabelas_md) + "\n", encoding="utf-8")
-    print(f"\nTabelas da questão 2 salvas em {arquivo}")
+    print(f"\nTabelas salvas em {arquivo}")
     return arquivo
 
 

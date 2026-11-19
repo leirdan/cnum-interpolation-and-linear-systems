@@ -1,15 +1,6 @@
-"""
-Interpolação polinomial via SISTEMA LINEAR (matriz de Vandermonde).
-
-Procura P_n(x) = a_0 + a_1 x + ... + a_n x^n tal que P_n(x_i) = y_i (i = 0..n).
-Cada ponto gera uma equação, o que dá o sistema V a = y, com V[i][j] = x_i^j
-(matriz de Vandermonde). O sistema é resolvido por Eliminação de Gauss com
-pivoteamento parcial (gauss_elim.py, Questão 1).
-"""
 import numpy as np
 
 from .gauss_elim import gauss_elim
-
 
 def validar_pontos(xs, ys):
     """

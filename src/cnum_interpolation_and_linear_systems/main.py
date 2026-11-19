@@ -60,15 +60,16 @@ def questao_1() -> None:
 def questao_2() -> None:
     """
     Questão 2 (itens 2.2 e 2.3): imprime as tabelas de comparação no terminal e
-    salva todas em PASTA_Q2/tabelas_questao2.md. Ver experimentos_interpolacao.py.
+    salva cada item em um arquivo separado em PASTA_Q2:
+    tabelas_questao2_2.md e tabelas_questao2_3.md. Ver experimentos_interpolacao.py.
     """
     # ------------------------- Questão 2.2 ---------------------------
-    tabelas_md = questao_2_2(A_22, B_22, GRAUS_22, PONTOS_TESTE_22, N_MALHA)
+    tabelas_22 = questao_2_2(A_22, B_22, GRAUS_22, PONTOS_TESTE_22, N_MALHA)
+    salvar_tabelas(PASTA_Q2, tabelas_22, "tabelas_questao2_2.md")
 
     # ------------------------- Questão 2.3 ---------------------------
-    tabelas_md += questao_2_3(A_23, B_23, GRAUS_23, PONTOS_TESTE_23, N_MALHA)
-
-    salvar_tabelas(PASTA_Q2, tabelas_md)
+    tabelas_23 = questao_2_3(A_23, B_23, GRAUS_23, PONTOS_TESTE_23, N_MALHA)
+    salvar_tabelas(PASTA_Q2, tabelas_23, "tabelas_questao2_3.md")
 
 
 def main() -> None:
