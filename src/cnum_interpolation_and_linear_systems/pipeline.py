@@ -109,12 +109,12 @@ def rodar_pipeline(
             print(f"[{nome}] ignorada: A {a.shape} não é quadrada.")
             continue
 
-        dominancia = testar_dominancia_diagonal(a)
-        print(
-            f"[{nome}] dominância diagonal: "
-            f"linhas={'estrita' if dominancia['linhas_estrita'] else 'fraca' if dominancia['linhas'] else 'não'}, "
-            f"colunas={'estrita' if dominancia['colunas_estrita'] else 'fraca' if dominancia['colunas'] else 'não'}"
-        )
+        # dominancia = testar_dominancia_diagonal(a)
+        # print(
+        #     f"[{nome}] dominância diagonal: "
+        #     f"linhas={'estrita' if dominancia['linhas_estrita'] else 'fraca' if dominancia['linhas'] else 'não'}, "
+        #     f"colunas={'estrita' if dominancia['colunas_estrita'] else 'fraca' if dominancia['colunas'] else 'não'}"
+        # )
 
         salvar_b(b, pasta_b, nome, sufixo_b)
 

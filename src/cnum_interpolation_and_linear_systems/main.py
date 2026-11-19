@@ -3,6 +3,7 @@ from pathlib import Path
 from .ls.gauss_elim import gauss_elim
 from .ls.lu import lu
 from .ls.gauss_jacobi import gauss_jacobi
+from .ls.gauss_seidel import gauss_seidel
 from .pipeline import Metodo, rodar_pipeline
 from .experimentos_interpolacao import questao_2_2, questao_2_3, salvar_tabelas
 
@@ -24,6 +25,7 @@ METODOS: dict[str, Metodo] = {
     "eliminacao_gauss": gauss_elim,
     "eliminacao_lu": lu,
     "jacobi": gauss_jacobi,
+    "seidel": gauss_seidel,
 }
 
 # ── Configurações Questão 2.2 ────────────────────────────────────────────────────────────
