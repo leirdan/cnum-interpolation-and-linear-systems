@@ -25,7 +25,7 @@ def gauss_jacobi(a: np.ndarray, b: np.ndarray, epsilon: float = 1e-6) -> np.ndar
     while 1:
       # Calcula o próximo x^k usando a fórmula de Jacobi tradicional.
       x_next = (b - (a_without_diag @ x_prev)) / a_diagonal
-      print(f"Iteração {x_next=}")
+      # print(f"Iteração {x_next=}")
       if (np.abs(rel_dist(x_next, x_prev)) < epsilon):
         break
 
