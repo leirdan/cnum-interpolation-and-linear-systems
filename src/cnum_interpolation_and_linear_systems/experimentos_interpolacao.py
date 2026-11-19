@@ -1,29 +1,10 @@
-"""
-Experimentos da Questão 2 — Interpolação polinomial (itens 2.2 e 2.3).
-
-  2.2  f(x) = e^x em [1, 3], n = 3, 4, 5, 10, pelo sistema linear e por Lagrange.
-  2.3  f(x) = 1/(1 + 25x^2) em [0, 4], n = 4, 10, 15, pelo sistema linear.
-  (n é o grau do polinômio interpolador, logo são usados n+1 pontos.)
-
-As configurações (intervalos, graus, pontos de teste, malha, pasta de saída) ficam no
-main.py e são passadas como parâmetros para as funções deste arquivo.
-
-A comparação com a função original é feita em tabelas, impressas no terminal e
-salvas em Markdown em resultados_questao2/ (tabelas_questao2_2.md e tabelas_questao2_3.md).
-
-Como rodar (na raiz do projeto):
-    uv run main                                                                   (questões 1 e 2)
-    uv run python -m cnum_interpolation_and_linear_systems.experimentos_interpolacao   (só a 2)
-"""
 import math
 
 import numpy as np
 
 from .ls.interpolacao_lagrange import lagrange
+from .ls.interpolacao_newton import newton
 from .ls.interpolacao_sist_linear import avaliar_polinomio, interpolacao_sist_linear, matriz_vandermonde
-
-# TODO: reativar quando o módulo de diferenças divididas existir
-# from .interpolacao_diferencas_divididas import coeficientes_newton, newton
 
 
 def f_exp(x):
@@ -85,8 +66,8 @@ def tabela(titulo, cabecalho, linhas):
 
 def questao_2_2(a, b, graus, pontos_teste, n_malha) -> list[str]:
     """
-    Item 2.2: interpola e^x em [a, b] pelo sistema linear (SL) e por Lagrange (LG)
-    e compara os dois com a função original.
+    Item 2.2: interpola e^x em [a, b] pelo sistema linear (SL), por Lagrange (LG)
+    e por Newton/diferenças divididas (NW) e compara os três com a função original.
 
     Entrada:
         a, b         -> intervalo [a, b];
@@ -105,7 +86,7 @@ def questao_2_2(a, b, graus, pontos_teste, n_malha) -> list[str]:
     resumo = []
 
     print(f"============ Questão 2.2: f(x) = e^x em [{_num(a)}, {_num(b)}] "
-          "(sistema linear e Lagrange) ============")
+          "(sistema linear, Lagrange e Newton) ============")
 
     for n in graus:
         xs, ys = pontos_igualmente_espacados(f_exp, a, b, n)
@@ -117,12 +98,14 @@ def questao_2_2(a, b, graus, pontos_teste, n_malha) -> list[str]:
             fx = math.exp(x)
             p_sl = avaliar_polinomio(coefs, x)
             p_lg = lagrange(xs, ys, x)
+            p_nw = newton(xs, ys, x)
             linhas.append([f"{x:.1f}", f"{fx:.8f}",
                            f"{p_sl:.8f}", f"{abs(fx - p_sl):.2e}",
-                           f"{p_lg:.8f}", f"{abs(fx - p_lg):.2e}"])
+                           f"{p_lg:.8f}", f"{abs(fx - p_lg):.2e}",
+                           f"{p_nw:.8f}", f"{abs(fx - p_nw):.2e}"])
         tabelas_md.append(tabela(
             f"2.2 (n = {n}): e^x x P_{n}(x)",
-            ["x", "e^x", "P SL", "erro SL", "P LG", "erro LG"],
+            ["x", "e^x", "P SL", "erro SL", "P LG", "erro LG", "P NW", "erro NW"],
             linhas))
 
         # resumo do grau n (erro medido na malha fina)
@@ -130,16 +113,20 @@ def questao_2_2(a, b, graus, pontos_teste, n_malha) -> list[str]:
         erro_sl = np.abs(p_sl - f_malha)
         p_lg = lagrange(xs, ys, malha)
         erro_lg = np.abs(p_lg - f_malha)
+        p_nw = newton(xs, ys, malha)
+        erro_nw = np.abs(p_nw - f_malha)
         # toda derivada de e^x é e^x, cujo máximo em [a, b] é e^b
         cota = math.exp(b) / math.factorial(n + 1) * np.max(np.abs(produto_nodal(xs, malha)))
         resumo.append([str(n), f"{(b - a) / n:.4f}",
-                       f"{erro_sl.max():.3e}", f"{erro_lg.max():.3e}",
+                       f"{erro_sl.max():.3e}", f"{erro_lg.max():.3e}", f"{erro_nw.max():.3e}",
                        f"{np.max(erro_sl / f_malha):.3e}", f"{np.max(erro_lg / f_malha):.3e}",
+                       f"{np.max(erro_nw / f_malha):.3e}",
                        f"{cota:.3e}"])
 
     tabelas_md.append(tabela(
         f"2.2 Resumo: erro máximo em [{_num(a)}, {_num(b)}]",
-        ["n", "h", "erro máx SL", "erro máx LG", "erro rel máx SL", "erro rel máx LG", "cota teórica"],
+        ["n", "h", "erro máx SL", "erro máx LG", "erro máx NW",
+         "erro rel máx SL", "erro rel máx LG", "erro rel máx NW", "cota teórica"],
         resumo))
     return tabelas_md
 
