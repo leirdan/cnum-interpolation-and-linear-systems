@@ -5,7 +5,7 @@ from .ls.lu import lu
 from .ls.gauss_jacobi import gauss_jacobi
 from .ls.gauss_seidel import gauss_seidel
 from .pipeline import Metodo, rodar_pipeline
-from .experimentos_interpolacao import questao_2_2, questao_2_3, salvar_tabelas
+from .experimentos_interpolacao import questao_2_2, questao_2_3, questao_2_4_b, questao_2_4_c, salvar_tabelas
 
 # ── Configurações Questão 1 ──────────────────────────────────────────────────────────────
 SUFIXO_MATRIZ_B = "_matriz_b"
@@ -45,6 +45,18 @@ GRAUS_23 = [4, 10, 15]
 # pontos de comparação: nenhum deles é nó para os graus testados
 PONTOS_TESTE_23 = [0.1, 0.2, 0.3, 0.5, 0.7, 1.5, 2.5, 3.5, 3.9]
 
+# ── Configurações Questão 2.4.b (CO2, estimativa para 2008) ────────────────────────────────
+ANO_ALVO_B = 2008
+PPM_OBSERVADO_B = 381
+PONTOS_B = [
+    ([2000, 2010, 2020],       [370, 388, 411]),         # 2º grau
+    ([1990, 2000, 2010, 2020], [335, 370, 388, 411]),    # 3º grau
+]
+
+# ── Configurações Questão 2.c (CO2, ano com 350 ppm) ─────────────────────────────────────
+XS_C, YS_C = [1990, 2000, 2010], [335, 370, 388]         # 2º grau
+PPM_ALVO_C = 350
+INTERVALO_C = (1990, 2000)                               # 350 fica entre 335 (1990) e 370 (2000)
 
 def questao_1() -> None:
     """
@@ -73,11 +85,17 @@ def questao_2() -> None:
     tabelas_23 = questao_2_3(A_23, B_23, GRAUS_23, PONTOS_TESTE_23, N_MALHA)
     salvar_tabelas(PASTA_Q2, tabelas_23, "tabelas_questao2_3.md")
 
+    tabelas_2_4_b = questao_2_4_b(PONTOS_B, ANO_ALVO_B, PPM_OBSERVADO_B)
+    salvar_tabelas(PASTA_Q2, tabelas_2_4_b, "tabelas_questao2_4_b.md")
+
+    tabelas_2_4_c = questao_2_4_c(XS_C, YS_C, PPM_ALVO_C, *INTERVALO_C)
+    salvar_tabelas(PASTA_Q2, tabelas_2_4_c, "tabelas_questao2_4_c.md")
+
 
 def main() -> None:
 
-    # ------------------------- Questão 1 -----------------------------
-    questao_1()
+    # # ------------------------- Questão 1 -----------------------------
+    # questao_1()
 
     # ------------------------- Questão 2 ------------------------------
     print()
