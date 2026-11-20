@@ -1,4 +1,5 @@
 from pathlib import Path
+import time
 from typing import Callable
 
 import numpy as np
@@ -51,32 +52,6 @@ def residuo_maximo(a: np.ndarray, b: np.ndarray, xs: np.ndarray) -> float:
     """Maior valor em módulo de |b_original - b_resultado|, com b_resultado = A @ xs."""
     return float(np.max(np.abs(b - a @ xs)))
 
-
-def testar_dominancia_diagonal(
-    a: np.ndarray | scipy.sparse.spmatrix | scipy.sparse.sparray,
-) -> dict[str, bool]:
-    """Testa dominância diagonal fraca e estrita por linhas e colunas."""
-    if a.ndim != 2 or a.shape[0] != a.shape[1]:
-        raise ValueError("A matriz A deve ser quadrada.")
-
-    diagonal = np.abs(a.diagonal())
-    if scipy.sparse.issparse(a):
-        abs_a = abs(a)
-        soma_linhas_fora_diagonal = np.asarray(abs_a.sum(axis=1)).ravel() - diagonal
-        soma_colunas_fora_diagonal = np.asarray(abs_a.sum(axis=0)).ravel() - diagonal
-    else:
-        abs_a = np.abs(a)
-        soma_linhas_fora_diagonal = abs_a.sum(axis=1) - diagonal
-        soma_colunas_fora_diagonal = abs_a.sum(axis=0) - diagonal
-
-    return {
-        "linhas": bool(np.all(diagonal >= soma_linhas_fora_diagonal)),
-        "linhas_estrita": bool(np.all(diagonal > soma_linhas_fora_diagonal)),
-        "colunas": bool(np.all(diagonal >= soma_colunas_fora_diagonal)),
-        "colunas_estrita": bool(np.all(diagonal > soma_colunas_fora_diagonal)),
-    }
-
-
 def rodar_pipeline(
     pasta_a: Path,
     pasta_b: Path,
@@ -93,6 +68,7 @@ def rodar_pipeline(
       - "matriz":        nome da matriz
       - "xs":            vetor solução
       - "residuo_max":   max(|b_original - A @ xs|)
+      - "tempo":         tempo da solução
     """
     resultados: list[dict] = []
 
@@ -109,18 +85,18 @@ def rodar_pipeline(
             print(f"[{nome}] ignorada: A {a.shape} não é quadrada.")
             continue
 
-        # dominancia = testar_dominancia_diagonal(a)
-        # print(
-        #     f"[{nome}] dominância diagonal: "
-        #     f"linhas={'estrita' if dominancia['linhas_estrita'] else 'fraca' if dominancia['linhas'] else 'não'}, "
-        #     f"colunas={'estrita' if dominancia['colunas_estrita'] else 'fraca' if dominancia['colunas'] else 'não'}"
-        # )
-
         salvar_b(b, pasta_b, nome, sufixo_b)
 
         for nome_metodo, metodo in metodos.items():
+            tempos: list[float] = []
+            xs = None
             try:
-                xs = metodo(a, b)
+                for i in range(5):
+                    print(f"[Execução #{i + 1} de {nome_metodo} na matriz {nome}]") 
+                    inicio = time.perf_counter()
+                    xs = metodo(a, b)
+                    fim = time.perf_counter()
+                    tempos.append(fim - inicio)
             except Exception as e:  # um método falhar não deve derrubar a pipeline
                 print(f"[{nome}] {nome_metodo} falhou: {e}")
                 continue
@@ -131,5 +107,6 @@ def rodar_pipeline(
                 "matriz": nome,
                 "xs": xs,
                 "residuo_max": residuo,
+                "tempo": float(np.mean(tempos)) 
             })
     return resultados

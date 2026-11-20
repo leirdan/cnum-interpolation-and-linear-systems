@@ -20,17 +20,17 @@ def gauss_jacobi(a: np.ndarray, b: np.ndarray, epsilon: float = 1e-6) -> np.ndar
 
     # X_0 começa como [b_i / a_ii] para cada elemento e X_1 começa como um vetor de zeros.
     x_prev = np.asarray(b, dtype=np.float64) / a.diagonal() 
-    x_next = np.zeros_like(b, dtype=np.float64)
 
     while 1:
       # Calcula o próximo x^k usando a fórmula de Jacobi tradicional.
       x_next = (b - (a_without_diag @ x_prev)) / a_diagonal
-      # print(f"Iteração {x_next=}")
-      if (np.abs(rel_dist(x_next, x_prev)) < epsilon):
-        break
 
       if (np.any(np.isnan(x_next)) or np.any(np.isinf(x_next))):
-        raise ValueError("O método de Jacobi divergiu. Verifique a matriz A e o vetor b.")
+        print("O método de Jacobi divergiu. Retornando o último vetor calculado.")
+        return x_prev
+
+      if (np.abs(rel_dist(x_next, x_prev)) < epsilon):
+        break
 
       # Caso não tenha atingido o critério de convergência, atualiza x^k-1 para a próxima iteração.
       x_prev = x_next.copy()

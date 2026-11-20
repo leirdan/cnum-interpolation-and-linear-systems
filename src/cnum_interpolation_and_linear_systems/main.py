@@ -68,7 +68,7 @@ def questao_1() -> None:
     print("------------Resultados questão 1------------")
     print(f"\n{len(resultados)} resultado(s).")
     for r in resultados:
-        print(f"- {r['metodo']} | {r['matriz']} | resíduo máx={r['residuo_max']:.3e}")
+        print(f"- {r['metodo']} | {r['matriz']} | resíduo máx={r['residuo_max']:.3e} | tempo médio={r['tempo']:.3f}s")
 
 
 def questao_2() -> None:
