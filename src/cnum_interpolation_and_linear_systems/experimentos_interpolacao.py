@@ -202,6 +202,57 @@ def questao_2_3(a, b, graus, pontos_teste, n_malha) -> list[str]:
         resumo))
     return tabelas_md
 
+def questao_2_4_b(pontos, ano_alvo, ppm_obs) -> list[str]:
+    """
+    Item 2.b: estima o CO2 em ano_alvo por interpolação de 2º e 3º graus e compara com o observado.
+
+    Entrada: pontos -> lista de (xs, ys), um por polinômio (grau = len(xs) - 1);
+             ano_alvo -> ano a estimar; ppm_obs -> valor observado nesse ano.
+    Saída:   lista com a tabela em Markdown (grau, nós, P_n(ano_alvo), erro absoluto e relativo).
+    """
+    linhas = []
+    for xs, ys in pontos:
+        coefs = interpolacao_sist_linear(xs, ys)        # acha o polinômio
+        p = avaliar_polinomio(coefs, ano_alvo)          # aplica no ano pedido
+        erro = abs(p - ppm_obs)
+        linhas.append([str(len(xs) - 1), ", ".join(map(str, xs)),
+                       f"{p:.4f}", f"{erro:.4f}", f"{100 * erro / ppm_obs:.2f}"])
+    return [tabela(f"2.4.b: estimativa para {ano_alvo} x observado ({ppm_obs} ppm)",
+                   ["grau", "nós", f"P_n({ano_alvo})", "erro abs", "erro rel (%)"], linhas)]
+
+def _bisseccao(f, a, b, tol=1e-10, max_iter=100):
+    """
+    Entrada: f -> função contínua com f(a) e f(b) de sinais opostos;
+             [a, b] -> intervalo da busca; tol -> tolerância; max_iter -> nº máximo de iterações.
+    Saída:   aproximação da raiz de f em [a, b] pelo método da bissecção.
+    """
+    fa, fb = f(a), f(b)
+    if fa * fb > 0:
+        raise ValueError("f(a) e f(b) precisam ter sinais opostos")
+    for _ in range(max_iter):
+        m = (a + b) / 2
+        fm = f(m)
+        if fm == 0 or (b - a) / 2 < tol:
+            return m
+        if fa * fm < 0:
+            b = m
+        else:
+            a, fa = m, fm
+    return (a + b) / 2
+
+def questao_2_4_c(xs, ys, ppm_alvo, a, b) -> list[str]:
+    """
+    Item 2.c: ano em que o CO2 atinge ppm_alvo, com um polinômio de 2º grau.
+
+    Entrada: xs, ys -> 3 pontos (ano, ppm); ppm_alvo -> concentração procurada;
+             [a, b] -> intervalo de anos que contém a solução (P_2(a) e P_2(b) de lados opostos de ppm_alvo).
+    Saída:   lista com a tabela em Markdown (ano estimado e P_2 nesse ano, para conferência).
+    """
+    coefs = interpolacao_sist_linear(xs, ys)                       # acha o polinômio
+    ano = _bisseccao(lambda x: avaliar_polinomio(coefs, x) - ppm_alvo, a, b)   # resolve P_2(x) = ppm_alvo
+    return [tabela(f"2.4.c: ano em que P_2 = {ppm_alvo} ppm",
+                   ["ano estimado", "P_2(ano)"],
+                   [[f"{ano:.2f}", f"{avaliar_polinomio(coefs, ano):.4f}"]])]
 
 def salvar_tabelas(pasta, tabelas_md, nome_arquivo):
     """
